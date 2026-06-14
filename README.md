@@ -25,4 +25,3 @@ Future goals:
 Current status:
 - Snapshot export/import working
 - Docker integration tests passing
-- SQL Server CDC snapshot-and-changes guarded behind DATAPULSE_ENABLE_SQLSERVER_CDC=1

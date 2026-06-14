@@ -27,6 +27,10 @@ CREATE DATABASE datapulse_demo;
 
 \c datapulse_demo;
 
+CREATE SCHEMA demo;
+
+SET search_path TO demo;
+
 CREATE TABLE customers (
     customer_id INTEGER PRIMARY KEY,
     customer_name VARCHAR(100),
@@ -57,17 +61,20 @@ Verify:
 Expected:
 
 ```
-table_name
------------------------------------------------------------------------------------
-customers
-orders
+           List of relations
+ Schema |   Name    | Type  |  Owner
+--------+-----------+-------+----------
+ demo   | customers | table | postgres
+ demo   | orders    | table | postgres
+(2 rows)
 
-(2 rows affected)
 ```
 
 Insert tables yang baru dibuat dengan syntax dibawah ini:
 
 ```sql
+SET search_path TO demo;
+
 INSERT INTO customers
 (customer_id, customer_name, email, city)
 VALUES
@@ -160,18 +167,21 @@ Verify:
 
 ```sql
 SELECT
- n.nspname,
- c.relname,
- c.relreplident
+ n.nspname, c.relname, c.relreplident
 FROM pg_class c
 JOIN pg_namespace n
-ON n.oid=c.relnamespace;
+ON n.oid=c.relnamespace
+WHERE n.nspname LIKE 'demo';
 ```
 
 Expected:
 
 ```
-f
+ nspname |    relname     | relreplident
+---------+----------------+--------------
+ demo    | customers      | f
+ demo    | orders         | f
+
 ```
 
 ## 3. CockroachDB Requirement
@@ -195,11 +205,7 @@ Buat database:
 CREATE DATABASE datapulse_demo;
 ```
 
-Buat schema:
-
-```sql
-CREATE SCHEMA dbo;
-```
+Buat schema: Tidak perlu membuat schema jika dari atau database source adalah PostgreSQL.
 
 sesuai source database (source database PostgreSQL).
 
@@ -270,6 +276,8 @@ untuk source PostgreSQL.
 ### Import Snapshot + CDC
 
 ```bash
+export DATAPULSE_ENABLE_POSTGRESQL_COCKROACHDB_CDC=1
+
 datapulse import data \
   --target-db-type cockroachdb \
   --target-db-host localhost \
