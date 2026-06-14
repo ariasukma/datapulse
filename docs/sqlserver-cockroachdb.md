@@ -164,17 +164,17 @@ Expected:
 
 ```
 name                                                                                                                             is_tracked_by_cdc
--------------------------------------------------------------------- --------------
-customers                                                                         1
-orders                                                                            1
-systranschemas                                                                    0
-change_tables                                                                     0
-ddl_history                                                                       0
-lsn_time_mapping                                                                  0
-captured_columns                                                                  0
-index_columns                                                                     0
-dbo_customers_CT                                                                  0
-dbo_orders_CT                                                                     0
+----------------------------------------------------------------- --------------
+customers                                                                      1
+orders                                                                         1
+systranschemas                                                                 0
+change_tables                                                                  0
+ddl_history                                                                    0
+lsn_time_mapping                                                               0
+captured_columns                                                               0
+index_columns                                                                  0
+dbo_customers_CT                                                               0
+dbo_orders_CT                                                                  0
 
 (10 rows affected)
 ```
@@ -222,20 +222,34 @@ datapulse_demo  ON                             1
 Verify:
 
 ```sql
-SELECT *
-FROM msdb.dbo.sysjobs;
+SELECT name FROM msdb.dbo.sysjobs;
 ```
 
 Expected:
 
 ```
-cdc.demo_capture
-cdc.demo_cleanup
+name
+-----------------------------------------------------------------------------------
+cdc.datapulse_demo_capture
+cdc.datapulse_demo_cleanup
+
+(2 rows affected)
 ```
 
 ## 2. CockroachDB Requirement
 
 Untuk CockroachDB tidak ada requirement khusus.
+Connect using docker
+
+```bash
+docker exec -it sqlserver-cockroachdb-cockroachdb-1 cockroach sql --insecure
+```
+
+Using cockroach sql
+
+```bash
+cockroach sql --insecure
+```
 
 Buat database:
 
@@ -247,12 +261,6 @@ Buat schema:
 
 ```sql
 CREATE SCHEMA dbo;
-```
-
-atau:
-
-```sql
-CREATE SCHEMA demo;
 ```
 
 sesuai source database (source database SQL Server).
@@ -268,7 +276,7 @@ datapulse export schema \
   --source-db-port 1434 \
   --source-db-user sa \
   --source-db-password 'SqlServer123!' \
-  --source-db-name demo \
+  --source-db-name datapulse_demo \
   --source-db-schema dbo \
   --source-ssl-mode disable \
   --export-dir /opt/datapulse/data1
@@ -285,7 +293,7 @@ datapulse export data \
   --source-db-port 1434 \
   --source-db-user sa \
   --source-db-password 'SqlServer123!' \
-  --source-db-name demo \
+  --source-db-name datapulse_demo \
   --source-db-schema dbo \
   --source-ssl-mode disable \
   --export-type snapshot-and-changes \
@@ -311,7 +319,8 @@ datapulse import schema \
   --target-db-host localhost \
   --target-db-port 26258 \
   --target-db-user root \
-  --target-db-name demo \
+  --target-db-name datapulse_demo \
+  --target-db-schema dbo \
   --target-ssl-mode disable \
   --export-dir /opt/datapulse/data1
 ```
@@ -324,7 +333,8 @@ datapulse import data \
   --target-db-host localhost \
   --target-db-port 26258 \
   --target-db-user root \
-  --target-db-name demo \
+  --target-db-name datapulse_demo \
+  --target-db-schema dbo \
   --target-ssl-mode disable \
   --export-dir /opt/datapulse/data1 \
   --adaptive-parallelism disabled

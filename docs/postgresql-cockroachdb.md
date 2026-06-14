@@ -78,7 +78,7 @@ datapulse export schema \
   --source-db-port 55432 \
   --source-db-user postgres \
   --source-db-password 'postgres' \
-  --source-db-name demo \
+  --source-db-name datapulse_demo \
   --source-db-schema demo \
   --source-ssl-mode disable \
   --export-dir /opt/datapulse/data2
@@ -95,7 +95,7 @@ datapulse export data \
   --source-db-port 55432 \
   --source-db-user postgres \
   --source-db-password 'postgres' \
-  --source-db-name demo \
+  --source-db-name datapulse_demo \
   --source-db-schema demo \
   --source-ssl-mode disable \
   --export-type snapshot-and-changes \
@@ -118,7 +118,7 @@ datapulse import schema \
   --target-db-host localhost \
   --target-db-port 26259 \
   --target-db-user root \
-  --target-db-name demo \
+  --target-db-name datapulse_demo \
   --target-ssl-mode disable \
   --export-dir /opt/datapulse/data2
 ```
@@ -140,7 +140,7 @@ datapulse import data \
   --target-db-host localhost \
   --target-db-port 26259 \
   --target-db-user root \
-  --target-db-name demo \
+  --target-db-name datapulse_demo \
   --target-ssl-mode disable \
   --export-dir /opt/datapulse/data2 \
   --adaptive-parallelism disabled
