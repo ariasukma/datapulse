@@ -2,9 +2,13 @@
 
 Use this process to prepare Datapulse for data migration from SQL Server to CockroachDB.
 
-## Create Table at SQL Server
+## SQL Server
 
-```bash
+### Create Table at SQL Server
+
+Buat database dan table di SQL Server, sebagai contoh kita akan mereplikasi 2 tables dibawah ini.
+
+```SQL
 CREATE DATABASE datapulse_demo;
 GO
 
@@ -62,4 +66,47 @@ VALUES
 (1009,9,999.99,'PAID'),
 (1010,10,75.00,'PENDING');
 GO
+```
+
+Dataset ini cukup bagus untuk menguji seluruh jalur Datapulse.
+
+```
+SQL Server -> PostgreSQL
+```
+
+Karena sudah mengandung:
+Primary Key, Foreign Key, VARCHAR/STRING, DECIMAL, TIMESTAMP/DATETIME, Parent-child relationship (customers → orders).
+
+### Enable CDC pada database
+
+```SQL
+USE datapulse_demo;
+EXEC sys.sp_cdc_enable_db;
+```
+
+Enable table CDC:
+
+```SQL
+EXEC sys.sp_cdc_enable_table
+    @source_schema='dbo',
+    @source_name='customers',
+    @role_name=NULL,
+    @supports_net_changes=1;
+
+EXEC sys.sp_cdc_enable_table
+    @source_schema='dbo',
+    @source_name='orders',
+    @role_name=NULL,
+    @supports_net_changes=1;
+```
+
+Verify:
+
+```SQL
+SELECT name,is_cdc_enabled
+FROM sys.databases
+WHERE name='datapulse_demo';
+
+SELECT name,is_tracked_by_cdc
+FROM sys.tables;
 ```
