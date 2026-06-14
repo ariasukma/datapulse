@@ -111,7 +111,7 @@ SELECT name,is_tracked_by_cdc
 FROM sys.tables;
 ```
 
-###Enable Snapshot Isolation
+### Enable Snapshot Isolation
 
 Ini wajib untuk SQL Server.
 
@@ -157,14 +157,14 @@ cdc.demo_capture
 cdc.demo_cleanup
 ```
 
-## 2. roachDB Requirement
+## 2. CockroachDB Requirement
 
 Untuk CockroachDB tidak ada requirement khusus.
 
 Buat database:
 
 ```SQL
-CREATE DATABASE demo;
+CREATE DATABASE datapulse_demo;
 ```
 
 Buat schema:
@@ -179,7 +179,7 @@ atau:
 CREATE SCHEMA demo;
 ```
 
-sesuai source.
+sesuai source database (source database SQL Server).
 
 ### 3. SQL Server → CockroachDB Flow
 
