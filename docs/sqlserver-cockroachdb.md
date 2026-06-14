@@ -53,7 +53,7 @@ GO
 
 Verify:
 
-```SQL
+```sql
 SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';
 GO
 ```
@@ -163,8 +163,8 @@ FROM sys.tables;
 Expected:
 
 ```
-name                                                                                                                             is_tracked_by_cdc
------------------------------------------------------------------ --------------
+name                                                           is_tracked_by_cdc
+-------------------------------------------------------------- -----------------
 customers                                                                      1
 orders                                                                         1
 systranschemas                                                                 0
