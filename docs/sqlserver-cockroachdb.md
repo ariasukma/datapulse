@@ -7,6 +7,19 @@ Use this process to prepare Datapulse for data migration from SQL Server to Cock
 ### Create Table at SQL Server
 
 Buat database dan table di SQL Server, sebagai contoh kita akan mereplikasi 2 tables dibawah ini.
+Connect using docker
+
+```BASH
+docker exec -it sqlserver-cockroachdb-sqlserver-1 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'SqlServer123!' -C
+```
+
+Using sqlcmd
+
+```BASH
+sqlcmd -S localhost -U sa -P 'SqlServer123!' -C
+```
+
+Script membuat tables untuk sample replikasi seperti dibawah ini:
 
 ```SQL
 CREATE DATABASE datapulse_demo;
@@ -36,7 +49,29 @@ CREATE TABLE orders (
         REFERENCES customers(customer_id)
 );
 GO
+```
 
+Verify:
+
+```SQL
+SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';
+GO
+```
+
+Expected:
+
+```
+table_name
+-----------------------------------------------------------------------------------
+customers
+orders
+
+(2 rows affected)
+```
+
+Insert tables yang baru dibuat dengan syntax dibawah ini:
+
+```SQL
 INSERT INTO customers
 (customer_id, customer_name, email, city)
 VALUES
@@ -71,7 +106,7 @@ GO
 Dataset ini cukup bagus untuk menguji seluruh jalur Datapulse.
 
 ```
-SQL Server -> PostgreSQL
+SQL Server -> CockroachDB
 ```
 
 Karena sudah mengandung:
@@ -82,6 +117,24 @@ Primary Key, Foreign Key, VARCHAR/STRING, DECIMAL, TIMESTAMP/DATETIME, Parent-ch
 ```SQL
 USE datapulse_demo;
 EXEC sys.sp_cdc_enable_db;
+```
+
+Verify:
+
+```SQL
+SELECT name,is_cdc_enabled
+FROM sys.databases
+WHERE name='datapulse_demo';
+```
+
+Expected:
+
+```
+name                                                                                                                             is_cdc_enabled
+-------------------------------------------------------------------- --------------
+datapulse_demo                                                                    1
+
+(1 rows affected)
 ```
 
 Enable table CDC:
@@ -103,12 +156,27 @@ EXEC sys.sp_cdc_enable_table
 Verify:
 
 ```SQL
-SELECT name,is_cdc_enabled
-FROM sys.databases
-WHERE name='datapulse_demo';
-
 SELECT name,is_tracked_by_cdc
 FROM sys.tables;
+```
+
+Expected:
+
+```
+name                                                                                                                             is_tracked_by_cdc
+-------------------------------------------------------------------- --------------
+customers                                                                         1
+orders                                                                            1
+systranschemas                                                                    0
+change_tables                                                                     0
+ddl_history                                                                       0
+lsn_time_mapping                                                                  0
+captured_columns                                                                  0
+index_columns                                                                     0
+dbo_customers_CT                                                                  0
+dbo_orders_CT                                                                     0
+
+(10 rows affected)
 ```
 
 ### Enable Snapshot Isolation
@@ -116,10 +184,10 @@ FROM sys.tables;
 Ini wajib untuk SQL Server.
 
 ```SQL
-ALTER DATABASE demo
+ALTER DATABASE datapulse_demo
 SET ALLOW_SNAPSHOT_ISOLATION ON;
 
-ALTER DATABASE demo
+ALTER DATABASE datapulse_demo
 SET READ_COMMITTED_SNAPSHOT ON;
 ```
 
@@ -131,14 +199,15 @@ SELECT
  snapshot_isolation_state_desc,
  is_read_committed_snapshot_on
 FROM sys.databases
-WHERE name='demo';
+WHERE name='datapulse_demo';
 ```
 
 Expected:
 
 ```
-ON
-1
+Oname           snapshot_isolation_state_desc  is_read_committed_snapshot_on
+--------------  -----------------------------  -----------------------------
+datapulse_demo  ON                             1
 ```
 
 ### SQL Server Agent CDC Job
