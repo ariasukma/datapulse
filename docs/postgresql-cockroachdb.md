@@ -6,6 +6,9 @@ Buat database dan table di PostgreSQL, sebagai contoh kita akan mereplikasi 2 ta
 Connect using docker
 
 ```bash
+docker compose -f docker/postgresql-cockroachdb/docker-compose.yml up -d
+docker compose -f docker/postgresql-cockroachdb/docker-compose.yml down
+
 docker exec -it postgresql-cockroachdb-postgresql-1 psql -U postgres
 ```
 
@@ -171,7 +174,36 @@ Expected:
 f
 ```
 
-## 3. PostgreSQL → CockroachDB Flow
+## 3. CockroachDB Requirement
+
+Untuk CockroachDB tidak ada requirement khusus.
+Connect using docker
+
+```bash
+docker exec -it sqlserver-cockroachdb-cockroachdb-1 cockroach sql --insecure
+```
+
+Using cockroach sql
+
+```bash
+cockroach sql --insecure
+```
+
+Buat database:
+
+```sql
+CREATE DATABASE datapulse_demo;
+```
+
+Buat schema:
+
+```sql
+CREATE SCHEMA dbo;
+```
+
+sesuai source database (source database PostgreSQL).
+
+## 4. PostgreSQL → CockroachDB Flow
 ### Export Schema
 
 ```bash

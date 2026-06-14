@@ -1,4 +1,4 @@
-# SQL Server to CockroachDB
+# SQL Server → CockroachDB
 
 Use this process to prepare Datapulse for data migration from SQL Server to CockroachDB.
 
@@ -10,6 +10,9 @@ Buat database dan table di SQL Server, sebagai contoh kita akan mereplikasi 2 ta
 Connect using docker
 
 ```bash
+docker compose -f docker/sqlserver-cockroachdb/docker-compose.yml up -d
+docker compose -f docker/sqlserver-cockroachdb/docker-compose.yml down
+
 docker exec -it sqlserver-cockroachdb-sqlserver-1 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'SqlServer123!' -C
 ```
 
