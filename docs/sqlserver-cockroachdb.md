@@ -9,19 +9,19 @@ Use this process to prepare Datapulse for data migration from SQL Server to Cock
 Buat database dan table di SQL Server, sebagai contoh kita akan mereplikasi 2 tables dibawah ini.
 Connect using docker
 
-```BASH
+```bash
 docker exec -it sqlserver-cockroachdb-sqlserver-1 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'SqlServer123!' -C
 ```
 
 Using sqlcmd
 
-```BASH
+```bash
 sqlcmd -S localhost -U sa -P 'SqlServer123!' -C
 ```
 
 Script membuat tables untuk sample replikasi seperti dibawah ini:
 
-```SQL
+```sql
 CREATE DATABASE datapulse_demo;
 GO
 
@@ -71,7 +71,7 @@ orders
 
 Insert tables yang baru dibuat dengan syntax dibawah ini:
 
-```SQL
+```sql
 INSERT INTO customers
 (customer_id, customer_name, email, city)
 VALUES
@@ -114,14 +114,14 @@ Primary Key, Foreign Key, VARCHAR/STRING, DECIMAL, TIMESTAMP/DATETIME, Parent-ch
 
 ### Enable CDC pada database
 
-```SQL
+```sql
 USE datapulse_demo;
 EXEC sys.sp_cdc_enable_db;
 ```
 
 Verify:
 
-```SQL
+```sql
 SELECT name,is_cdc_enabled
 FROM sys.databases
 WHERE name='datapulse_demo';
@@ -139,7 +139,7 @@ datapulse_demo                                                                  
 
 Enable table CDC:
 
-```SQL
+```sql
 EXEC sys.sp_cdc_enable_table
     @source_schema='dbo',
     @source_name='customers',
@@ -183,17 +183,24 @@ dbo_orders_CT                                                                   
 
 Ini wajib untuk SQL Server.
 
-```SQL
+```sql
 ALTER DATABASE datapulse_demo
 SET ALLOW_SNAPSHOT_ISOLATION ON;
 
+--ALTER DATABASE datapulse_demo
+--SET READ_COMMITTED_SNAPSHOT ON;
+
+ALTER DATABASE datapulse_demo SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+
 ALTER DATABASE datapulse_demo
 SET READ_COMMITTED_SNAPSHOT ON;
+
+ALTER DATABASE datapulse_demo SET MULTI_USER;
 ```
 
 Verify:
 
-```SQL
+```sql
 SELECT
  name,
  snapshot_isolation_state_desc,
@@ -214,7 +221,7 @@ datapulse_demo  ON                             1
 
 Verify:
 
-```SQL
+```sql
 SELECT *
 FROM msdb.dbo.sysjobs;
 ```
@@ -232,19 +239,19 @@ Untuk CockroachDB tidak ada requirement khusus.
 
 Buat database:
 
-```SQL
+```sql
 CREATE DATABASE datapulse_demo;
 ```
 
 Buat schema:
 
-```SQL
+```sql
 CREATE SCHEMA dbo;
 ```
 
 atau:
 
-```SQL
+```sql
 CREATE SCHEMA demo;
 ```
 
@@ -254,7 +261,7 @@ sesuai source database (source database SQL Server).
 
 Export Schema
 
-```BASH
+```bash
 datapulse export schema \
   --source-db-type sqlserver \
   --source-db-host localhost \
@@ -269,7 +276,7 @@ datapulse export schema \
 
 Export Snapshot + CDC
 
-```BASH
+```bash
 export DATAPULSE_ENABLE_SQLSERVER_CDC=1
 
 datapulse export data \
@@ -298,7 +305,7 @@ streaming changes to local queue
 
 Import Schema
 
-```BASH
+```bash
 datapulse import schema \
   --target-db-type cockroachdb \
   --target-db-host localhost \
@@ -311,7 +318,7 @@ datapulse import schema \
 
 Import Snapshot + CDC
 
-```BASH
+```bash
 datapulse import data \
   --target-db-type cockroachdb \
   --target-db-host localhost \
