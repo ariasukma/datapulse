@@ -2,7 +2,7 @@
 
 Use this process to prepare Datapulse for data migration from SQL Server to CockroachDB.
 
-## SQL Server
+## 1. SQL Server Requirement
 
 ### Create Table at SQL Server
 
@@ -109,4 +109,157 @@ WHERE name='datapulse_demo';
 
 SELECT name,is_tracked_by_cdc
 FROM sys.tables;
+```
+
+###Enable Snapshot Isolation
+
+Ini wajib untuk SQL Server.
+
+```SQL
+ALTER DATABASE demo
+SET ALLOW_SNAPSHOT_ISOLATION ON;
+
+ALTER DATABASE demo
+SET READ_COMMITTED_SNAPSHOT ON;
+```
+
+Verify:
+
+```SQL
+SELECT
+ name,
+ snapshot_isolation_state_desc,
+ is_read_committed_snapshot_on
+FROM sys.databases
+WHERE name='demo';
+```
+
+Expected:
+
+```
+ON
+1
+```
+
+### SQL Server Agent CDC Job
+
+Verify:
+
+```SQL
+SELECT *
+FROM msdb.dbo.sysjobs;
+```
+
+Expected:
+
+```
+cdc.demo_capture
+cdc.demo_cleanup
+```
+
+## 2. roachDB Requirement
+
+Untuk CockroachDB tidak ada requirement khusus.
+
+Buat database:
+
+```SQL
+CREATE DATABASE demo;
+```
+
+Buat schema:
+
+```SQL
+CREATE SCHEMA dbo;
+```
+
+atau:
+
+```SQL
+CREATE SCHEMA demo;
+```
+
+sesuai source.
+
+### 3. SQL Server → CockroachDB Flow
+
+Export Schema
+
+```BASH
+datapulse export schema \
+  --source-db-type sqlserver \
+  --source-db-host localhost \
+  --source-db-port 1434 \
+  --source-db-user sa \
+  --source-db-password 'SqlServer123!' \
+  --source-db-name demo \
+  --source-db-schema dbo \
+  --source-ssl-mode disable \
+  --export-dir /opt/datapulse/data1
+```
+
+Export Snapshot + CDC
+
+```BASH
+export DATAPULSE_ENABLE_SQLSERVER_CDC=1
+
+datapulse export data \
+  --source-db-type sqlserver \
+  --source-db-host localhost \
+  --source-db-port 1434 \
+  --source-db-user sa \
+  --source-db-password 'SqlServer123!' \
+  --source-db-name demo \
+  --source-db-schema dbo \
+  --source-ssl-mode disable \
+  --export-type snapshot-and-changes \
+  --export-dir /opt/datapulse/data1
+```
+
+Expected:
+
+```
+snapshot export report
+customers 10
+orders    10
+
+streaming changes to local queue
+```
+
+
+Import Schema
+
+```BASH
+datapulse import schema \
+  --target-db-type cockroachdb \
+  --target-db-host localhost \
+  --target-db-port 26258 \
+  --target-db-user root \
+  --target-db-name demo \
+  --target-ssl-mode disable \
+  --export-dir /opt/datapulse/data1
+```
+
+Import Snapshot + CDC
+
+```BASH
+datapulse import data \
+  --target-db-type cockroachdb \
+  --target-db-host localhost \
+  --target-db-port 26258 \
+  --target-db-user root \
+  --target-db-name demo \
+  --target-ssl-mode disable \
+  --export-dir /opt/datapulse/data1 \
+  --adaptive-parallelism disabled
+```
+
+Expected:
+
+```
+snapshot import report
+customers 10
+orders    10
+
+streaming changes to cockroachdb
 ```
