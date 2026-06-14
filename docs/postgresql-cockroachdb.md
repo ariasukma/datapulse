@@ -180,7 +180,7 @@ Untuk CockroachDB tidak ada requirement khusus.
 Connect using docker
 
 ```bash
-docker exec -it sqlserver-cockroachdb-cockroachdb-1 cockroach sql --insecure
+docker exec -it postgresql-cockroachdb-cockroachdb-1 cockroach sql --insecure
 ```
 
 Using cockroach sql
