@@ -155,7 +155,7 @@ EXEC sys.sp_cdc_enable_table
 
 Verify:
 
-```SQL
+```sql
 SELECT name,is_tracked_by_cdc
 FROM sys.tables;
 ```
